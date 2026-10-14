@@ -65,15 +65,16 @@ function drawSweep(){
 // 建筑锚点由底图近似配准；目标编号优先，未知目标不猜测。
 function drawDartWaves(xy,scale){
  const anchors={10:[2.4,7.5],110:[25.6,7.5],11:[10.9,3.6],111:[17.1,11.4]};
- for(const e of recent(2.4)){
+ for(const e of data.events){if(e.时刻秒>time||time-e.时刻秒>3.5)continue;
   if(e.事件类型!=='飞镖命中')continue;
   const anchor=anchors[e.目标robot_id];if(!anchor)continue;
+  ctx.save();ctx.globalAlpha=.95;ctx.strokeStyle='#ffe3a6';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(...xy(...anchor),22*Math.min(scale,2),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
   const [x,y]=xy(...anchor),age=time-e.时刻秒,progress=age/2.4;
-  const radius=(10+progress*125)*Math.min(scale,2),alpha=(1-progress)*.9;
+  const radius=(14+progress*150)*Math.min(scale,2),alpha=(1-progress)*1;
   ctx.save();ctx.translate(x,y);ctx.strokeStyle='#ffcc81';ctx.fillStyle='#ffcc81';ctx.globalAlpha=alpha;ctx.lineWidth=3;
   ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
   ctx.globalAlpha=alpha*.3;ctx.lineWidth=8;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
-  ctx.globalAlpha=alpha*.18;ctx.beginPath();ctx.arc(0,0,Math.max(5,18*(1-progress)),0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=alpha*.28;ctx.beginPath();ctx.arc(0,0,Math.max(5,18*(1-progress)),0,Math.PI*2);ctx.fill();
   ctx.globalAlpha=alpha;ctx.font='bold 13px "Microsoft YaHei",sans-serif';ctx.textAlign='center';
   ctx.fillText(`飞镖命中 · ${e.目标类型||'建筑'}  −${value(e.数值)}`,0,-25);
   ctx.restore();
