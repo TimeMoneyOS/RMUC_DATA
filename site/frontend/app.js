@@ -37,7 +37,7 @@ ctx.globalAlpha=.5;ctx.strokeStyle=col;ctx.lineWidth=2;
 ctx.beginPath();ctx.moveTo(...xy(previous[1],previous[2]));ctx.lineTo(x,y);ctx.stroke();
 }
 ctx.globalAlpha=1;}
-points.push({x,y,id:robot.id});const ev=effects.filter(e=>e.robot_id===robot.id),hit=ev.filter(e=>e.事件类型==='受击'),fire=ev.some(e=>e.事件类型==='发弹');ctx.save();ctx.translate(x,y);ctx.globalAlpha=st.stale?.4:1;ctx.strokeStyle=selected===robot.id?'#fff':col;ctx.fillStyle='#0d1728';ctx.lineWidth=selected===robot.id?3:2;ctx.beginPath();if(robot.type==='空中'){ctx.moveTo(0,-19);ctx.lineTo(19,0);ctx.lineTo(0,19);ctx.lineTo(-19,0);ctx.closePath();}else if(robot.type==='哨兵'){ctx.moveTo(0,-19);ctx.lineTo(16,-10);ctx.lineTo(14,9);ctx.lineTo(0,20);ctx.lineTo(-14,9);ctx.lineTo(-16,-10);ctx.closePath();}else ctx.arc(0,0,12,0,Math.PI*2);ctx.fill();
+points.push({x,y,id:robot.id});const ev=effects.filter(e=>e.robot_id===robot.id),hit=ev.filter(e=>e.事件类型==='受击'),fire=ev.some(e=>e.事件类型==='发弹');ctx.save();ctx.translate(x,y);const markerScale=canvas.getBoundingClientRect().width<=700?.58:1;ctx.scale(markerScale,markerScale);ctx.globalAlpha=st.stale?.4:1;ctx.strokeStyle=selected===robot.id?'#fff':col;ctx.fillStyle='#0d1728';ctx.lineWidth=selected===robot.id?3:2;ctx.beginPath();if(robot.type==='空中'){ctx.moveTo(0,-19);ctx.lineTo(19,0);ctx.lineTo(0,19);ctx.lineTo(-19,0);ctx.closePath();}else if(robot.type==='哨兵'){ctx.moveTo(0,-19);ctx.lineTo(16,-10);ctx.lineTo(14,9);ctx.lineTo(0,20);ctx.lineTo(-14,9);ctx.lineTo(-16,-10);ctx.closePath();}else ctx.arc(0,0,12,0,Math.PI*2);ctx.fill();
 // 保留标记轮廓，圆内液位从底部随血量降低，未知血量不填充。
 if(s[4]!=null&&s[5]>0){const ratio=Math.max(0,Math.min(1,s[4]/s[5]));
 ctx.save();ctx.clip();ctx.globalAlpha=(st.stale?.4:1)*.65;
@@ -115,7 +115,7 @@ function drawBuildingHealth(robot,xy){
  const anchor=anchors[robot.id],st=state(robot,time);if(!anchor||!st)return;
  const s=st.s,[x,y]=xy(...anchor),ratio=s[4]!=null&&s[5]>0?Math.max(0,Math.min(1,s[4]/s[5])):null;
  const tint=ratio===0?'#89939e':colors[robot.team];
- ctx.save();ctx.translate(x,y);ctx.globalAlpha=st.stale?.4:1;
+ ctx.save();ctx.translate(x,y);const markerScale=canvas.getBoundingClientRect().width<=700?.58:1;ctx.scale(markerScale,markerScale);ctx.globalAlpha=st.stale?.4:1;
  ctx.fillStyle='#0b1527e8';ctx.strokeStyle=tint;ctx.lineWidth=2;
  ctx.beginPath();ctx.arc(0,0,19,0,Math.PI*2);ctx.fill();
  if(ratio!=null){ctx.save();ctx.clip();ctx.fillStyle=ratio>.6?'#49dca0':ratio>.3?'#ffc45e':'#ff626c';ctx.globalAlpha*=.55;ctx.fillRect(-20,19-38*ratio,40,38*ratio);ctx.restore();}ctx.stroke();
