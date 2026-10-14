@@ -65,7 +65,7 @@ function drawSweep(){
 // 建筑锚点由底图近似配准；目标编号优先，未知目标不猜测。
 function drawDartWaves(xy,scale){
  const anchors={10:[2.4,7.5],110:[25.6,7.5],11:[10.9,3.6],111:[17.1,11.4]};
- const duration=6,cycle=1.2;
+ const duration=3,cycle=1.2;
  for(const e of data.events){
   const age=time-e.时刻秒;
   if(e.事件类型!=='飞镖命中'||age<0||age>=duration)continue;
