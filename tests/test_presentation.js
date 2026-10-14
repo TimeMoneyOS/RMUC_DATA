@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const P=require('../frontend/presentation.js');
+const robot={id:106,type:'空中',team:'蓝',frames:[[1,0,0,0,100],[2,0,0,0,0],[3,0,0,0,100]]};
+const events=[{时刻秒:7,事件类型:'雷达反制UAV',阵营:'蓝',robot_id:null}];
+const index=P.indexEvents(events);
+assert.equal(P.robotStatus(robot,{s:robot.frames[1]},2,index).kind,'dead');
+assert.equal(P.robotStatus(robot,{s:robot.frames[2]},3.5,index).kind,'revived');
+assert.equal(P.robotStatus(robot,{s:robot.frames[0]},1,index).kind,'active');
+assert.equal(P.robotStatus(robot,{s:robot.frames[2]},7.5,index).kind,'countered');
+assert.equal(P.robotStatus(robot,{s:robot.frames[2]},10,index).kind,'active');
+assert.equal(P.robotStatus({...robot,team:'红'},{s:robot.frames[2]},7.5,index).kind,'active');
+assert.equal(P.robotStatus(robot,{s:robot.frames[2],stale:true},7.5,index).kind,'unknown');
+assert.equal(P.latest(events,6,()=>true),null);
+console.log('PASS: grey zero HP, revive transition, counter team/NULL id, expiry, seeking');
