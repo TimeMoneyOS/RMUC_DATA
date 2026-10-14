@@ -65,7 +65,7 @@ function drawSweep(){
 // 建筑锚点由底图近似配准；目标编号优先，未知目标不猜测。
 function drawDartWaves(xy,scale){
  const anchors={10:[2.4,7.5],110:[25.6,7.5],11:[10.9,3.6],111:[17.1,11.4]};
- const duration=3,cycle=1.2;
+ const duration=3;
  for(const e of data.events){
   const age=time-e.时刻秒;
   if(e.事件类型!=='飞镖命中'||age<0||age>=duration)continue;
@@ -73,20 +73,18 @@ function drawDartWaves(xy,scale){
   const [x,y]=xy(...anchor),unit=Math.min(scale,2);
   const fade=Math.min(1,age/.12,(duration-age)/1.3);
   ctx.save();ctx.translate(x,y);
-  // 三道错相位冲击波：快速扫描，末段统一淡出，暂停时保持同一相位。
-  for(let layer=0;layer<3;layer++){
-   const elapsed=age-layer*.4;if(elapsed<0)continue;
-   const phase=(elapsed%cycle)/cycle,radius=(20+phase*260)*unit;
-   const opacity=fade*(1-phase)*.65;
-   const glow=ctx.createRadialGradient(0,0,Math.max(0,radius-18*unit),0,0,radius+12*unit);
-   glow.addColorStop(0,'rgba(255,172,65,0)');glow.addColorStop(.5,`rgba(255,191,99,${opacity*.3})`);
-   glow.addColorStop(.65,`rgba(255,236,194,${opacity*.75})`);glow.addColorStop(1,'rgba(255,172,65,0)');
-   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius+12*unit,0,Math.PI*2);ctx.fill();
-   ctx.globalAlpha=opacity;ctx.strokeStyle='#ffe3ad';ctx.lineWidth=1.5;
-   // 留出空隙的扫描弧，比整圈实色环更轻。
-   for(let arc=0;arc<6;arc++){const angle=age*4.5+arc*Math.PI/3+layer*.3;
-    ctx.beginPath();ctx.arc(0,0,radius,angle,angle+.55);ctx.stroke();}
-  }
+  // 以命中道具为圆心，一次扫描到场地最远角；半径随地图缩放。
+  const corners=[[0,0],[28,0],[0,15],[28,15]].map(point=>xy(...point));
+  const maxRadius=Math.max(...corners.map(([cx,cy])=>Math.hypot(cx-x,cy-y)))+20*unit;
+  const progress=age/duration,radius=Math.max(1,progress*maxRadius);
+  const opacity=fade*.8;
+  const glow=ctx.createRadialGradient(0,0,Math.max(0,radius-22*unit),0,0,radius+14*unit);
+  glow.addColorStop(0,'rgba(255,172,65,0)');glow.addColorStop(.5,`rgba(255,191,99,${opacity*.3})`);
+  glow.addColorStop(.65,`rgba(255,236,194,${opacity*.75})`);glow.addColorStop(1,'rgba(255,172,65,0)');
+  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius+14*unit,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=opacity;ctx.strokeStyle='#ffe3ad';ctx.lineWidth=1.5;
+  for(let arc=0;arc<12;arc++){const angle=age*1.5+arc*Math.PI/6;
+   ctx.beginPath();ctx.arc(0,0,radius,angle,angle+.35);ctx.stroke();}
   ctx.globalAlpha=fade;ctx.strokeStyle='#ffdf9b';ctx.lineWidth=2;
   for(let arc=0;arc<4;arc++){const angle=age*5+arc*Math.PI/2;
    ctx.beginPath();ctx.arc(0,0,24*unit,angle,angle+.8);ctx.stroke();}
