@@ -22,6 +22,7 @@ function cards(){for(const team of ['红','蓝']){const aside=$(team==='红'?'re
 function draw(){drawSweep();const rect=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1;if(canvas.width!==Math.round(rect.width*dpr)||canvas.height!==Math.round(rect.height*dpr)){canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);const w=rect.width,h=rect.height;ctx.clearRect(0,0,w,h);const scale=Math.min(w/1476,h/790)*zoom;let ox=(w-1476*scale)/2+pan.x,oy=(h-790*scale)/2+pan.y;const target=data?.robots.find(r=>r.id===selected),targetState=target&&state(target,time);if(follow&&targetState&&valid(targetState.s)&&!['基地','前哨站'].includes(target.type)){ox=w/2-targetState.s[1]/28*1476*scale;oy=h/2-(1-targetState.s[2]/15)*790*scale;}
 if(image.complete&&image.naturalWidth)ctx.drawImage(image,100,68,1476,790,ox,oy,1476*scale,790*scale);const xy=(x,y)=>[ox+x/28*1476*scale,oy+(1-y/15)*790*scale];points=[];if(!data)return;
 const effects=$('effects').checked?recent():[];
+if($('effects').checked)drawDartWaves(xy,scale);
 for(const robot of data.robots){if(['基地','前哨站'].includes(robot.type))continue;const st=state(robot,time);if(!st||!valid(st.s))continue;const s=st.s,visual=Presentation.robotStatus(robot,st,time,eventIndex),col=statusColors[visual.kind]||colors[robot.team],[x,y]=xy(s[1],s[2]);if($('trails').checked){const start=upper(robot.frames,time-8),end=upper(robot.frames,time);for(let i=Math.max(start,1);i<end;i++){const a=robot.frames[i-1],b=robot.frames[i];if(!valid(a)||!valid(b)||b[0]-a[0]>2||Math.hypot(b[1]-a[1],b[2]-a[2])>6)continue;ctx.globalAlpha=.5*(1-(time-b[0])/8);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(...xy(a[1],a[2]));ctx.lineTo(...xy(b[1],b[2]));ctx.stroke();}
 // 尾迹末端连接当前插值位置；跳点、缺失和过期状态不连线。
 const previous=robot.frames[end-1];
@@ -59,4 +60,22 @@ function drawSweep(){
  $('sweep').style.opacity=Math.min(1,age*5,(3-age)*3);
  $('sweep').querySelector('strong').textContent=`${team}方无人机遭雷达反制`;
  $('sweep').querySelector('span').textContent=e.备注||'反制事件已触发';
+}
+
+// 建筑锚点由底图近似配准；目标编号优先，未知目标不猜测。
+function drawDartWaves(xy,scale){
+ const anchors={10:[2.4,7.5],110:[25.6,7.5],11:[10.9,3.6],111:[17.1,11.4]};
+ for(const e of recent(2.4)){
+  if(e.事件类型!=='飞镖命中')continue;
+  const anchor=anchors[e.目标robot_id];if(!anchor)continue;
+  const [x,y]=xy(...anchor),age=time-e.时刻秒,progress=age/2.4;
+  const radius=(10+progress*125)*Math.min(scale,2),alpha=(1-progress)*.9;
+  ctx.save();ctx.translate(x,y);ctx.strokeStyle='#ffcc81';ctx.fillStyle='#ffcc81';ctx.globalAlpha=alpha;ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=alpha*.3;ctx.lineWidth=8;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=alpha*.18;ctx.beginPath();ctx.arc(0,0,Math.max(5,18*(1-progress)),0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=alpha;ctx.font='bold 13px "Microsoft YaHei",sans-serif';ctx.textAlign='center';
+  ctx.fillText(`飞镖命中 · ${e.目标类型||'建筑'}  −${value(e.数值)}`,0,-25);
+  ctx.restore();
+ }
 }
